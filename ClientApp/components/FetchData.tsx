@@ -27,8 +27,32 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         return <div>
             <h1>Sample Data</h1>
             <p>This component demonstrates fetching data from the server.</p>
+            <button onClick={this.postData}></button>
             { contents }
         </div>;
+    }
+
+    private postData(){
+        fetch("/api/SampleData/Post",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(
+                {
+                    Id: "",
+                    Name: "TestName",
+                    PhoneNumber: "780 246.8060"
+                }as Item)
+        })
+        .then(respone=> {
+            console.log(respone);
+        })
+        .catch(exception=>{
+            console.exception(exception);
+        })
     }
 
     private static renderItemTable(data: Item[]) {

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Granify.Models;
 using Granify.Api.DataAccess;
+using Microsoft.AspNetCore.Http;
 
 namespace Granify.Api.Controllers
 {
@@ -20,6 +21,20 @@ namespace Granify.Api.Controllers
         public async Task<IEnumerable<Item>> Get()
         {
             return await _itemRepo.GetItemsAsync();
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Post([FromBody]Item itemToPost){
+            try{
+                await _itemRepo.PostItemAsync(itemToPost);
+                return Ok();
+            }
+            catch(ArgumentException ex){
+                return BadRequest(ex);
+            }
+            catch(Exception ex){
+                return StatusCode(StatusCodes.Status500InternalServerError,ex);
+            }
         }
     }
 }

@@ -13,6 +13,12 @@ namespace Granify.Models
         public Item Fields { get; set;} 
     }
 
+    public class AirTablePostItem{
+        
+        [JsonProperty(PropertyName = "fields")]
+        public Item Fields { get; set;} 
+    }
+
     public class AirTableResponse{
         [JsonProperty(PropertyName = "records")]
         public List<AirTableResponseItem> Records { get; set;}
