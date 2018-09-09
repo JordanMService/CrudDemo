@@ -88,7 +88,7 @@ export default class DeleteModal extends React.Component<DeleteModalProps, Delet
         return(
             <Modal className="scrolling" trigger={this.props.triggerElement("Delete Item", this.handleOpen)} open={this.state.modalOpen} onClose={this.handleClose}>
                 <Modal.Header>Delete an Item</Modal.Header>
-                <Segment basic>
+               
                         <Dimmer active={this.state.loading}>
                             <Loader />
                         </Dimmer>
@@ -100,7 +100,7 @@ export default class DeleteModal extends React.Component<DeleteModalProps, Delet
                                 <Button onClick={this.handleClose}>Cancel</Button>
                             </div>
                         </div>
-                </Segment>
+               
             </Modal>)
     }
 }

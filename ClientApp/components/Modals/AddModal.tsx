@@ -93,7 +93,7 @@ export default class AddModal extends React.Component<AddModalProps, AddModalSta
         return(
             <Modal className="scrolling" trigger={this.props.triggerElement("Add Item", this.handleOpen)} open={this.state.modalOpen} onClose={this.handleClose}>
                 <Modal.Header>Create an Item</Modal.Header>
-                <Segment basic>
+              
                         <Dimmer active={this.state.loading}>
                             <Loader />
                         </Dimmer>
@@ -108,7 +108,7 @@ export default class AddModal extends React.Component<AddModalProps, AddModalSta
                         </div>
                        
                
-                </Segment>
+                
             </Modal>)
     }
 }

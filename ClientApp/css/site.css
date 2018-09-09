@@ -11,13 +11,13 @@
 }
 
 /* Keep the nav menu independent of scrolling and on top of other items */
-.main-nav {
+/* .main-nav {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1;
-}
+} */
 
 /*Modal Overrides*/
 .modals.dimmer .ui.scrolling.modal{
@@ -25,7 +25,9 @@
     bottom: auto;
 }
 
-.se
+.dimmer {
+    z-index: 999999 !important;
+}
 
 .FlexContent{
     display: flex;
@@ -34,6 +36,10 @@
 
 .FlexContent div{
     padding: 15px;
+}
+
+.PageContent{
+    margin-top: 65px;
 }
 
 @media (max-width: 767px) {
