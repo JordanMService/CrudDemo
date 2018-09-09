@@ -17,16 +17,22 @@ namespace Granify.Api.Controllers
             _itemRepo = itemRepo;
         }
 
+
         [HttpGet("[action]")]
         public async Task<IEnumerable<Item>> Get()
         {
-            return (await _itemRepo.GetItemsAsync()).Select(r => r.Item);
+            return (await _itemRepo.GetRowsAsync()).Select(r => r.Item);
         }
 
+        /// <summary>
+        /// Get item by its 10 character Id
+        /// </summary>
+        /// <param name="id">10 character assigned Id</param>
+        /// <returns></returns>
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> Get(string id){
             try{
-                var row = await _itemRepo.GetAirTableRowByIdAsync(id) ;
+                var row = await _itemRepo.GetRowById(id) ;
                 return Ok(row.Item);
             }
             catch(KeyNotFoundException ex){
@@ -37,6 +43,11 @@ namespace Granify.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Post new items to server
+        /// </summary>
+        /// <param name="itemToPost"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> Post([FromBody]Item itemToPost){
             try{
@@ -51,6 +62,11 @@ namespace Granify.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Delete Item
+        /// </summary>
+        /// <param name="id">10 character assigned Id</param>
+        /// <returns></returns>
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> Delete(string id){
             try{

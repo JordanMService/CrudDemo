@@ -8,43 +8,71 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using Granify.Providers;
+using System.Net;
 
 namespace Granify.Api.DataAccess
 {
     public class ItemRepo
     {
-        private readonly HttpClient _airTableClient; 
-        private const string baseUrl = "https://api.airtable.com";
+        private readonly AirTableClientProvider _airTableClientProvider; 
+      
         private const string tableUrl= "/v0/appeetsXPXrTp8SlB/Granify%20Data";
-        public ItemRepo(string airTableKey){
-            var client = new HttpClient();
-            client.BaseAddress = new Uri(baseUrl);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", airTableKey);
-            _airTableClient = client;
+        public ItemRepo(AirTableClientProvider provider){
+          _airTableClientProvider = provider;
         }
 
+        /// <summary>
+        /// Get all rows stored in Airtable
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync()
         {
-            var responseStr = await _airTableClient.GetStringAsync($"{tableUrl}?view=Grid%20view");
+            var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?view=Grid%20view");
             var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr);
             return data.Records.Where(r=> !r.Item.IsDeleted);
         }
  
-
-        public async Task<AirTableResponseItem> GetAirTableRowByIdAsync(string itemId){
-            var item = (await GetRowsAsync()).FirstOrDefault(i => i.Item.Id == itemId && i.Item.IsDeleted == false);
-            if(item == null){
-                throw new KeyNotFoundException();
+        /// <summary>
+        /// Get Airtable row by assigned Id
+        /// </summary>
+        /// <param name="itemId">10 character item Id</param>
+        /// <returns></returns>
+        public async Task<AirTableResponseItem> GetRowById(string itemId){
+            try{
+                var formula = $"filterByFormula=%7BId%7D%3D%22{itemId}%22";
+                
+                var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?{formula}");
+                var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records.Where(r => !r.Item.IsDeleted);
+                if(data.Count() == 0){
+                    throw new KeyNotFoundException();
+                }
+                return(data.FirstOrDefault());
             }
-            return item;
+            catch(Exception ex)
+            {
+                var test = ex;
+            }
+
+            return null;
+           
         }
 
+        /// <summary>
+        /// Get hourly statistics
+        /// </summary>
+        /// <returns></returns>
         public async Task GetItemStatistics(){
             var items = await GetRowsAsync();
             var deletedItems = items.Where(i => i.Item.IsDeleted);
             var activeItems = items.Where(i => !i.Item.IsDeleted);
         }
 
+        /// <summary>
+        /// Post Item to Airtable
+        /// </summary>
+        /// <param name="itemToPost"></param>
+        /// <returns></returns>
         public async Task PostItemAsync(Item itemToPost){
 
             if(String.IsNullOrEmpty(itemToPost.Name)){
@@ -66,7 +94,7 @@ namespace Granify.Api.DataAccess
 
            itemToPost.LastUpdated = DateTime.Now;
             
-            var response = await _airTableClient.PostAsync(tableUrl, _ConvertItemToContent(airTableItem));
+            var response = await _airTableClientProvider.PostAsync(tableUrl, _ConvertItemToContent(airTableItem));
 
             if(!response.IsSuccessStatusCode){
                 var error = await response.Content.ReadAsStringAsync();
@@ -75,13 +103,18 @@ namespace Granify.Api.DataAccess
 
         }
 
+        /// <summary>
+        /// Set is deleted flag in Airtable
+        /// </summary>
+        /// <param name="itemId">10 character Item Id</param>
+        /// <returns></returns>
         public async Task DeleteItemAsync(string itemId){
-            var item = await  GetAirTableRowByIdAsync(itemId);
+            var item = await  GetRowById(itemId);
             var airTableItem = new { fields = new {IsDeleted = true, LastUpdated = DateTime.Now}};
             
             var airTablePaylod = JsonConvert.SerializeObject(airTableItem);
             
-            var response = await _airTableClient.PatchAsync($"{tableUrl}/{item.Id}",_ConvertItemToContent(airTableItem));
+            var response = await _airTableClientProvider.PatchAsync($"{tableUrl}/{item.Id}",_ConvertItemToContent(airTableItem));
 
              if(!response.IsSuccessStatusCode){
                 var error = await response.Content.ReadAsStringAsync();
@@ -127,18 +160,7 @@ namespace Granify.Api.DataAccess
             var airTablePaylod = JsonConvert.SerializeObject(item);
             return new StringContent(airTablePaylod, System.Text.Encoding.UTF8,"application/json");
         }
-    }
-
-    public static class HttpClientExtensions{
-        public static async Task<HttpResponseMessage> PatchAsync(this HttpClient httpClient, string uriString, HttpContent httpContent){
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"),uriString){
-                Content = httpContent
-            };
-            
-            return await httpClient.SendAsync(request);
-            
-        }
-    }
+    }  
 }
 
 

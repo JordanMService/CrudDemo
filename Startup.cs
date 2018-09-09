@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Granify.Api.DataAccess;
 using Granify.Models;
+using Granify.Providers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -29,9 +30,12 @@ namespace Granify
             services.AddMvc()
                 .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
-            services.AddScoped<ItemRepo>(sp => {
-                return new ItemRepo(_appSettings.Keys.AirTable);
+            
+            services.AddScoped<AirTableClientProvider>(sp => {
+                return new AirTableClientProvider(_appSettings.Keys.AirTable);
             });
+
+            services.AddScoped<ItemRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
