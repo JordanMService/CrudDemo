@@ -26,11 +26,15 @@ namespace Granify.Api.DataAccess
         /// Get all rows stored in Airtable
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync()
+        public async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync(bool showDeleted= false)
         {
             var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?view=Grid%20view");
-            var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr);
-            return data.Records.Where(r=> !r.Item.IsDeleted);
+            var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records;
+
+            if(!showDeleted){
+                data = data.Where(r => !r.Item.IsDeleted).ToList();
+            }
+            return data;
         }
  
         /// <summary>
@@ -41,7 +45,7 @@ namespace Granify.Api.DataAccess
         public async Task<AirTableResponseItem> GetRowById(string itemId){
             try{
                 var formula = $"filterByFormula=%7BId%7D%3D%22{itemId}%22";
-                
+                var test = WebUtility.UrlDecode(formula);
                 var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?{formula}");
                 var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records.Where(r => !r.Item.IsDeleted);
                 if(data.Count() == 0){
@@ -62,10 +66,13 @@ namespace Granify.Api.DataAccess
         /// Get hourly statistics
         /// </summary>
         /// <returns></returns>
-        public async Task GetItemStatistics(){
-            var items = await GetRowsAsync();
-            var deletedItems = items.Where(i => i.Item.IsDeleted);
-            var activeItems = items.Where(i => !i.Item.IsDeleted);
+        public async Task<ItemStats> GetItemStatistics(){
+            var cutoffTime = DateTime.Now.AddHours(-3);
+            var items = (await GetRowsAsync(true)).Where(i=> i.Item.LastUpdated >= cutoffTime);
+            return new ItemStats{
+                ActiveCount = items.Where(i => !i.Item.IsDeleted).Count(),
+                DeletedCount = items.Where(i => i.Item.IsDeleted).Count()
+            };
         }
 
         /// <summary>

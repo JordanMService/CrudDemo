@@ -14,4 +14,9 @@ namespace Granify.Models
 
         public DateTime? LastUpdated {get;set;}
     }
+
+    public class ItemStats{
+        public int ActiveCount {get;set;}
+        public int DeletedCount {get;set;}
+    }
 }

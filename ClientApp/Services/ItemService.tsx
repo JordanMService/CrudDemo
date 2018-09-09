@@ -1,4 +1,5 @@
 export default class ItemService{
+
     public static PostData(name: string, phoneNumber: string) : Promise<Response>{
        return fetch("/api/SampleData/Post",
         {
@@ -22,6 +23,10 @@ export default class ItemService{
 
     public static GetItem(itemId: string) : Promise<Response>{
         return fetch(`api/SampleData/Get/${itemId}`)
+    }
+
+    public static GetStats(): Promise<Response>{
+        return fetch("api/SampleData/Stats")
     }
 }
 

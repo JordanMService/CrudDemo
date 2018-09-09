@@ -18,10 +18,21 @@ namespace Granify.Api.Controllers
         }
 
 
+        /// <summary>
+        /// Get statistics for the last 3 hours
+        /// </summary>
+        /// <param name="id">10 character assigned Id</param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        public async Task<IEnumerable<Item>> Get()
+        public async Task<IActionResult> Stats()
         {
-            return (await _itemRepo.GetRowsAsync()).Select(r => r.Item);
+            try{
+                var stats = await _itemRepo.GetItemStatistics();
+                return Ok(stats);
+            }
+            catch(Exception ex){
+                return StatusCode(StatusCodes.Status500InternalServerError,ex);
+            }
         }
 
         /// <summary>
@@ -40,6 +51,26 @@ namespace Granify.Api.Controllers
             }
             catch(Exception ex){
                   return StatusCode(StatusCodes.Status500InternalServerError,ex);
+            }
+        }
+
+        
+        /// <summary>
+        /// Delete Item
+        /// </summary>
+        /// <param name="id">10 character assigned Id</param>
+        /// <returns></returns>
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Delete(string id){
+            try{
+                await _itemRepo.DeleteItemAsync(id);
+                return Ok();
+            }
+            catch(KeyNotFoundException ex){
+                return NotFound();
+            }
+            catch(Exception ex){
+                return StatusCode(StatusCodes.Status500InternalServerError,ex);
             }
         }
 
@@ -62,23 +93,5 @@ namespace Granify.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Delete Item
-        /// </summary>
-        /// <param name="id">10 character assigned Id</param>
-        /// <returns></returns>
-        [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> Delete(string id){
-            try{
-                await _itemRepo.DeleteItemAsync(id);
-                return Ok();
-            }
-            catch(KeyNotFoundException ex){
-                return NotFound();
-            }
-            catch(Exception ex){
-                return StatusCode(StatusCodes.Status500InternalServerError,ex);
-            }
-        }
     }
 }

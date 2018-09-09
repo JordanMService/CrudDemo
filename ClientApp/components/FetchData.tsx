@@ -1,28 +1,26 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
+import ItemService from "../Services/ItemService";
 import 'isomorphic-fetch';
 
 interface FetchDataExampleState {
-    sampleData: Item[];
+    stats: ItemStatistics | null;
     loading: boolean;
 }
 
 export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDataExampleState> {
     constructor() {
         super();
-        this.state = { sampleData: [], loading: true };
+        this.state = { stats: null, loading: true };
 
-        fetch('api/SampleData/Get')
-            .then(response => response.json() as Promise<Item[]>)
-            .then(data => {
-                this.setState({ sampleData: data, loading: false });
-            });
+        this.GetStats();
+
     }
 
     public render() {
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
-            : FetchData.renderItemTable(this.state.sampleData);
+            : this.renderStats();
 
         return <div>
             <h1>Item Statistics</h1>
@@ -32,33 +30,45 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         </div>;
     }
 
+    //Todo make this repeat
+    private GetStats(){
+        ItemService.GetStats()
+        .then(response=>{
+            if(response.ok){
+                (response.json() as Promise<ItemStatistics>)
+                .then(data=>{
+                    debugger;
+                    this.setState({stats: data});
+                })
+            }
+            this.setState({loading: false})
+        })
+        .catch(ex=>{
+            this.setState({loading: false})
+        })
+    }
 
-  
-
-    private static renderItemTable(data: Item[]) {
-        return <table className='table'>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Phone Number</th>
-                </tr>
-            </thead>
-            <tbody>
-            {data.map(item =>
-                <tr key={ item.Id }>
-                    <td>{ item.Id }</td>
-                    <td>{ item.Name }</td>
-                    <td>{ item.PhoneNumber}</td>
-                </tr>
-            )}
-            </tbody>
-        </table>;
+    private renderStats(){
+        if(this.state.stats == null){
+            return <h3>No statisitcs found</h3>
+        }
+        return(
+            <div>
+                <h3>Trends for the last 3 hours</h3>
+                <div>
+                    <h4>Average Records Per Hour:</h4>
+                    <span>{this.state.stats.ActiveCount/3}</span>
+                </div>
+                <div>
+                    <h4>Average Records Created/Deleted Per Hour:</h4>
+                    <span>{`${(this.state.stats.ActiveCount/3)}:${(this.state.stats.DeletedCount/3)}`}</span>
+                </div>
+            </div>
+        )
     }
 }
 
-interface Item {
-    Id: string;
-    Name: string;
-    PhoneNumber: string;
+interface ItemStatistics {
+    ActiveCount: number
+    DeletedCount: number
 }
