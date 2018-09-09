@@ -14,18 +14,35 @@ namespace Granify.Api.DataAccess
     public class ItemRepo
     {
         private readonly HttpClient _airTableClient; 
-        private const string baseUrl = "https://api.airtable.com/v0/appeetsXPXrTp8SlB/Granify%20Data";
+        private const string baseUrl = "https://api.airtable.com";
+        private const string tableUrl= "/v0/appeetsXPXrTp8SlB/Granify%20Data";
         public ItemRepo(string airTableKey){
             var client = new HttpClient();
             client.BaseAddress = new Uri(baseUrl);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", airTableKey);
             _airTableClient = client;
         }
-        public async Task<IEnumerable<Item>> GetItemsAsync()
+
+        public async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync()
         {
-            var responseStr = await _airTableClient.GetStringAsync("?view=Grid%20view");
+            var responseStr = await _airTableClient.GetStringAsync($"{tableUrl}?view=Grid%20view");
             var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr);
-            return data.Records.Select(r => r.Fields);
+            return data.Records.Where(r=> !r.Item.IsDeleted);
+        }
+ 
+
+        public async Task<AirTableResponseItem> GetAirTableRowByIdAsync(string itemId){
+            var item = (await GetRowsAsync()).FirstOrDefault(i => i.Item.Id == itemId && i.Item.IsDeleted == false);
+            if(item == null){
+                throw new KeyNotFoundException();
+            }
+            return item;
+        }
+
+        public async Task GetItemStatistics(){
+            var items = await GetRowsAsync();
+            var deletedItems = items.Where(i => i.Item.IsDeleted);
+            var activeItems = items.Where(i => !i.Item.IsDeleted);
         }
 
         public async Task PostItemAsync(Item itemToPost){
@@ -47,11 +64,26 @@ namespace Granify.Api.DataAccess
                 Fields = itemToPost
             };
 
-            var airTablePaylod = JsonConvert.SerializeObject(airTableItem);
+           itemToPost.LastUpdated = DateTime.Now;
             
-            var response = await _airTableClient.PostAsync("",new StringContent(airTablePaylod, System.Text.Encoding.UTF8,"application/json"));
+            var response = await _airTableClient.PostAsync(tableUrl, _ConvertItemToContent(airTableItem));
 
             if(!response.IsSuccessStatusCode){
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception("Unable to post item");
+            }
+
+        }
+
+        public async Task DeleteItemAsync(string itemId){
+            var item = await  GetAirTableRowByIdAsync(itemId);
+            var airTableItem = new { fields = new {IsDeleted = true, LastUpdated = DateTime.Now}};
+            
+            var airTablePaylod = JsonConvert.SerializeObject(airTableItem);
+            
+            var response = await _airTableClient.PatchAsync($"{tableUrl}/{item.Id}",_ConvertItemToContent(airTableItem));
+
+             if(!response.IsSuccessStatusCode){
                 var error = await response.Content.ReadAsStringAsync();
                 throw new Exception("Unable to post item");
             }
@@ -90,8 +122,25 @@ namespace Granify.Api.DataAccess
             return true;
             
         }
+
+        private StringContent _ConvertItemToContent(object item){
+            var airTablePaylod = JsonConvert.SerializeObject(item);
+            return new StringContent(airTablePaylod, System.Text.Encoding.UTF8,"application/json");
+        }
+    }
+
+    public static class HttpClientExtensions{
+        public static async Task<HttpResponseMessage> PatchAsync(this HttpClient httpClient, string uriString, HttpContent httpContent){
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"),uriString){
+                Content = httpContent
+            };
+            
+            return await httpClient.SendAsync(request);
+            
+        }
     }
 }
+
 
 
 

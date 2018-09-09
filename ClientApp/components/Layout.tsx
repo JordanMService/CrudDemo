@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { NavMenu } from './NavMenu';
+import 'semantic-ui-css/semantic.min.css';
 
 export interface LayoutProps {
     children?: React.ReactNode;

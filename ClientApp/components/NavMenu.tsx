@@ -1,7 +1,17 @@
 import * as React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import AddModal from './Modals/AddModal';
+import DeleteModal from './Modals/DeleteModal';
+import DisplayModal from './Modals/DisplayModal';
+import ItemService from "../Services/ItemService";
+import { Button } from 'semantic-ui-react';
 
 export class NavMenu extends React.Component<{}, {}> {
+
+    private renderModalButton = (buttonText: string,clickFn: (e : React.SyntheticEvent<any>) => void) =>{
+            return(<Button onClick={clickFn}>{buttonText}</Button>)
+    } 
+
     public render() {
         return <div className='main-nav'>
                 <div className='navbar navbar-inverse'>
@@ -12,25 +22,19 @@ export class NavMenu extends React.Component<{}, {}> {
                         <span className='icon-bar'></span>
                         <span className='icon-bar'></span>
                     </button>
-                    <Link className='navbar-brand' to={ '/' }>Granify</Link>
+                    <Link className='navbar-brand' to={ '/' }>Demo</Link>
                 </div>
                 <div className='clearfix'></div>
                 <div className='navbar-collapse collapse'>
                     <ul className='nav navbar-nav'>
                         <li>
-                            <NavLink to={ '/' } exact activeClassName='active'>
-                                <span className='glyphicon glyphicon-home'></span> Home
-                            </NavLink>
+                            <DisplayModal triggerElement={this.renderModalButton} onSubmit={ItemService.GetItem}/>
                         </li>
                         <li>
-                            <NavLink to={ '/counter' } activeClassName='active'>
-                                <span className='glyphicon glyphicon-education'></span> Counter
-                            </NavLink>
+                            <AddModal triggerElement={this.renderModalButton} successCallback={()=>{alert("Record Created")}} onSubmit={ItemService.PostData}/>
                         </li>
                         <li>
-                            <NavLink to={ '/fetchdata' } activeClassName='active'>
-                                <span className='glyphicon glyphicon-th-list'></span> Fetch data
-                            </NavLink>
+                            <DeleteModal triggerElement={this.renderModalButton} successCallback={()=>{alert("Record Deleted")}} onSubmit={ItemService.DeleteItem}/>
                         </li>
                     </ul>
                 </div>

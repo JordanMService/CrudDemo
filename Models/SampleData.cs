@@ -9,5 +9,9 @@ namespace Granify.Models
         public string PhoneNumber { get; set; }
 
         public string Name { get; set;} 
+
+        public bool IsDeleted { get; set; }
+
+        public DateTime? LastUpdated {get;set;}
     }
 }

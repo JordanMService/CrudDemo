@@ -20,7 +20,21 @@ namespace Granify.Api.Controllers
         [HttpGet("[action]")]
         public async Task<IEnumerable<Item>> Get()
         {
-            return await _itemRepo.GetItemsAsync();
+            return (await _itemRepo.GetItemsAsync()).Select(r => r.Item);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Get(string id){
+            try{
+                var row = await _itemRepo.GetAirTableRowByIdAsync(id) ;
+                return Ok(row.Item);
+            }
+            catch(KeyNotFoundException ex){
+                return NotFound();
+            }
+            catch(Exception ex){
+                  return StatusCode(StatusCodes.Status500InternalServerError,ex);
+            }
         }
 
         [HttpPost("[action]")]
@@ -31,6 +45,20 @@ namespace Granify.Api.Controllers
             }
             catch(ArgumentException ex){
                 return BadRequest(ex);
+            }
+            catch(Exception ex){
+                return StatusCode(StatusCodes.Status500InternalServerError,ex);
+            }
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Delete(string id){
+            try{
+                await _itemRepo.DeleteItemAsync(id);
+                return Ok();
+            }
+            catch(KeyNotFoundException ex){
+                return NotFound();
             }
             catch(Exception ex){
                 return StatusCode(StatusCodes.Status500InternalServerError,ex);

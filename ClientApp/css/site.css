@@ -19,6 +19,23 @@
     z-index: 1;
 }
 
+/*Modal Overrides*/
+.modals.dimmer .ui.scrolling.modal{
+    top:auto;
+    bottom: auto;
+}
+
+.se
+
+.FlexContent{
+    display: flex;
+    flex-direction: column;
+}
+
+.FlexContent div{
+    padding: 15px;
+}
+
 @media (max-width: 767px) {
     /* On small screens, the nav menu spans the full width of the screen. Leave a space for it. */
     body {

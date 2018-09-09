@@ -10,7 +10,7 @@ namespace Granify.Models
         public string Id { get; set;}
 
         [JsonProperty(PropertyName = "fields")]
-        public Item Fields { get; set;} 
+        public Item Item { get; set;} 
     }
 
     public class AirTablePostItem{
