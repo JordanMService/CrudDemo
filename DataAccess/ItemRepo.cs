@@ -71,7 +71,8 @@ namespace Granify.Api.DataAccess
             var items = (await GetRowsAsync(true)).Where(i=> i.Item.LastUpdated >= cutoffTime);
             return new ItemStats{
                 ActiveCount = items.Where(i => !i.Item.IsDeleted).Count(),
-                DeletedCount = items.Where(i => i.Item.IsDeleted).Count()
+                DeletedCount = items.Where(i => i.Item.IsDeleted).Count(),
+                PolledAt = DateTime.Now
             };
         }
 

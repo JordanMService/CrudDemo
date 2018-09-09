@@ -18,5 +18,6 @@ namespace Granify.Models
     public class ItemStats{
         public int ActiveCount {get;set;}
         public int DeletedCount {get;set;}
+        public DateTime PolledAt {get;set;}
     }
 }

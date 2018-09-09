@@ -14,6 +14,7 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         this.state = { stats: null, loading: true };
 
         this.GetStats();
+        setInterval(this.GetStats,10000)
 
     }
 
@@ -30,14 +31,13 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         </div>;
     }
 
-    //Todo make this repeat
-    private GetStats(){
+    
+    private GetStats = () =>{
         ItemService.GetStats()
         .then(response=>{
             if(response.ok){
                 (response.json() as Promise<ItemStatistics>)
                 .then(data=>{
-                    debugger;
                     this.setState({stats: data});
                 })
             }
@@ -48,20 +48,41 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         })
     }
 
+    private calculateAverage(inputNumber: number){
+        return (inputNumber/3)
+    }
+
+    private calculateCreatedDeletedRatio(createdValue: number, deletedValue: number){
+        if( deletedValue == 0){
+            return (this.calculateAverage(createdValue).toFixed(2));
+        }
+
+        return (this.calculateAverage(createdValue)/this.calculateAverage(deletedValue)).toFixed(2);
+    }
+
+    private getTime(dateStr: string){
+        const date = new Date(dateStr);
+        const hours = (date.getHours()<10?'0':'') + date.getHours();
+        const minutes = (date.getMinutes()<10?'0':'') + date.getMinutes();
+        return(`${hours}:${minutes}`)
+    }
+
     private renderStats(){
         if(this.state.stats == null){
             return <h3>No statisitcs found</h3>
         }
         return(
             <div>
-                <h3>Trends for the last 3 hours</h3>
+                <h3>Trends for the last 3 hours as of {this.getTime(this.state.stats.PolledAt)}</h3>
+                <hr/>
                 <div>
                     <h4>Average Records Per Hour:</h4>
-                    <span>{this.state.stats.ActiveCount/3}</span>
+                    <span>{this.calculateAverage(this.state.stats.ActiveCount).toFixed(2)} Created/Hr</span>
                 </div>
+                <hr/>
                 <div>
                     <h4>Average Records Created/Deleted Per Hour:</h4>
-                    <span>{`${(this.state.stats.ActiveCount/3)}:${(this.state.stats.DeletedCount/3)}`}</span>
+                    <span>{`${this.calculateCreatedDeletedRatio(this.state.stats.ActiveCount,this.state.stats.DeletedCount)} (Created/Hr) / (Deleted/Hr)`}</span>
                 </div>
             </div>
         )
@@ -71,4 +92,5 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
 interface ItemStatistics {
     ActiveCount: number
     DeletedCount: number
+    PolledAt: string
 }
