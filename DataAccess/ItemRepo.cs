@@ -26,7 +26,7 @@ namespace Granify.Api.DataAccess
         /// Get all rows stored in Airtable
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync(bool showDeleted= false)
+        public virtual async Task<IEnumerable<AirTableResponseItem>> GetRowsAsync(bool showDeleted= false)
         {
             var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?view=Grid%20view");
             var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records;
@@ -42,23 +42,16 @@ namespace Granify.Api.DataAccess
         /// </summary>
         /// <param name="itemId">10 character item Id</param>
         /// <returns></returns>
-        public async Task<AirTableResponseItem> GetRowById(string itemId){
-            try{
-                var formula = $"filterByFormula=%7BId%7D%3D%22{itemId}%22";
-                var test = WebUtility.UrlDecode(formula);
-                var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?{formula}");
-                var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records.Where(r => !r.Item.IsDeleted);
-                if(data.Count() == 0){
-                    throw new KeyNotFoundException();
-                }
-                return(data.FirstOrDefault());
+        public virtual async Task<AirTableResponseItem> GetRowById(string itemId){
+          
+            var formula = $"filterByFormula=%7BId%7D%3D%22{itemId}%22";
+            var test = WebUtility.UrlDecode(formula);
+            var responseStr = await _airTableClientProvider.GetStringAsync($"{tableUrl}?{formula}");
+            var data = JsonConvert.DeserializeObject<AirTableResponse>(responseStr).Records.Where(r => !r.Item.IsDeleted);
+            if(data.Count() == 0){
+                throw new KeyNotFoundException();
             }
-            catch(Exception ex)
-            {
-                var test = ex;
-            }
-
-            return null;
+            return(data.FirstOrDefault());
            
         }
 

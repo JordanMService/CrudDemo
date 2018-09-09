@@ -24,15 +24,15 @@ namespace Granify.Providers
         }
 
 
-        public async Task<string> GetStringAsync(string uri){
+        public virtual async Task<string> GetStringAsync(string uri){
             return await _airTableClient.GetStringAsync(uri);
         }
        
-        public async Task<HttpResponseMessage> PostAsync(string uri, HttpContent content){
+        public virtual async Task<HttpResponseMessage> PostAsync(string uri, HttpContent content){
             return await _airTableClient.PostAsync(uri,content);
         }
    
-        public async Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content){
+        public virtual async Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content){
             return await _airTableClient.PatchAsync(uri, content);
         }
     }

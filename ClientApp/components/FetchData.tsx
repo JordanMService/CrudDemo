@@ -14,7 +14,7 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         this.state = { stats: null, loading: true };
 
         this.GetStats();
-        setInterval(this.GetStats,10000)
+        setInterval(this.GetStats,3000)
 
     }
 
@@ -26,7 +26,6 @@ export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDat
         return <div>
             <h1>Item Statistics</h1>
             <p>Below are the global and per hour statistics.</p>
-         
             { contents }
         </div>;
     }
