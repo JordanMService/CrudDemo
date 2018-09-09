@@ -1,7 +1,8 @@
 # CrudDemo
 Short demo application    
 [Live Site](https://testblz20180508040048.azurewebsites.net/)   
-[Testing Repo](https://github.com/JordanMService/DemoTests)  
+[Testing Repo](https://github.com/JordanMService/DemoTests)   
+[Airtable View](https://airtable.com/invite/l?inviteId=invZZXZh1kaMBQ6QA&inviteToken=d4a56a98c27e2a0cd17d0ac3054e9d5367c293792ec5a6c4c73f080f60af0d03)  
 
 
 ### Frameworks
